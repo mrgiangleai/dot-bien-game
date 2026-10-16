@@ -41,7 +41,8 @@ export class Hud {
       if (g.mode === 'zombie') {
         if (x.kind === 'human' && x.alive) a++;
         else if (x.kind === 'zombie' && !x.eliminated) b++;
-      } else if (x.team === 'blue') a++;
+      } else if (g.deadmatch && !x.alive) continue; // deadmatch: chỉ đếm người còn sống
+      else if (x.team === 'blue') a++;
       else b++;
     }
     return [a, b];
@@ -59,6 +60,10 @@ export class Hud {
       return 'Sống sót · dùng <kbd>2</kbd> kết liễu đột biến bằng dao';
     }
     if (g.phase === 'end') return 'Trận mới sắp bắt đầu…';
+    if (g.deadmatch) {
+      if (!p.alive) return 'Bạn đã bị hạ · đang xem đồng đội đến hết vòng';
+      return 'Deadmatch · không hồi sinh · hạ hết đội địch để thắng';
+    }
     if (!p.alive) return `Hồi sinh sau <kbd>${Math.ceil(p.respawnTimer)}</kbd>s`;
     return `Hạ gục đối thủ · đội đạt <kbd>${MODES.tdm.killTarget}</kbd> điểm thắng`;
   }
@@ -73,7 +78,7 @@ export class Hud {
     this.set('lbl-b', M.teamB);
     this.set('score', `${g.score[0]} : ${g.score[1]}`);
     const sec = Math.ceil(g.timer);
-    this.set('modeline', g.phase === 'safe' ? `${M.label} · AN TOÀN ${sec}` : g.phase === 'prep' ? `${M.label} · CHUẨN BỊ ${sec}` : `${M.label} · ${fmtTime(g.timer)}`);
+    this.set('modeline', g.phase === 'safe' ? `${g.label} · AN TOÀN ${sec}` : g.phase === 'prep' ? `${g.label} · CHUẨN BỊ ${sec}` : `${g.label} · ${fmtTime(g.timer)}`);
 
     const hp = Math.max(0, Math.ceil(p.hp));
     this.set('hp-text', String(hp));
@@ -136,7 +141,7 @@ export class Hud {
       return `<div class="team ${cls}"><h3>${title}<span>${list.length}</span></h3>
         <table><thead><tr><th>Người chơi</th><th>Máu</th><th>Hạ</th><th>Chết</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     };
-    $('scoreboard').innerHTML = `<div class="sb-head">${M.label} · ${g.score[0]} : ${g.score[1]}</div><div class="sb-cols">${groups.map(col).join('')}</div>`;
+    $('scoreboard').innerHTML = `<div class="sb-head">${g.label} · ${g.score[0]} : ${g.score[1]}</div><div class="sb-cols">${groups.map(col).join('')}</div>`;
   }
 
   drawMinimap() {

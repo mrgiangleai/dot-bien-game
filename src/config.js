@@ -32,6 +32,8 @@ export const DIFFICULTY = {
 export const MODES = {
   zombie: { label: 'ZOMBIE V4', prep: 6, roundTime: 150, teamA: 'NGƯỜI', teamB: 'ĐỘT BIẾN' },
   tdm: { label: 'ĐẤU ĐỘI', roundTime: 300, killTarget: 30, respawn: 3, teamA: 'XANH', teamB: 'ĐỎ' },
+  // Deadmatch: luật phụ của đấu đội — không hồi sinh, hạ hết đội địch là thắng vòng
+  dm: { label: 'DEADMATCH', roundTime: 180 },
 };
 
 // vùng an toàn đầu mỗi vòng: không ai bắn hay nhận sát thương, không ra khỏi vùng

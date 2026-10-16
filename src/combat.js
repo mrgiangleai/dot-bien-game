@@ -202,12 +202,13 @@ export class Combat {
     } else {
       t.hp = 0;
       t.alive = false;
-      t.respawnTimer = MODES.tdm.respawn;
+      t.respawnTimer = g.deadmatch ? 0 : MODES.tdm.respawn;
       t.deaths++;
       if (att) {
         att.kills++;
-        g.score[att.team === 'blue' ? 0 : 1]++;
+        if (!g.deadmatch) g.score[att.team === 'blue' ? 0 : 1]++;
       }
+      if (t.isLocal && g.deadmatch) g.hud.banner('BẠN ĐÃ BỊ HẠ', 'Không hồi sinh · đang xem đồng đội', 2.5);
       g.hud.feed(att, t, weapon === 'knife' ? 'chém' : weapon === 'grenade' ? 'nổ tung' : 'hạ');
     }
   }

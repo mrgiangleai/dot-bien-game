@@ -13,6 +13,8 @@ Mở http://localhost:8765 (điện thoại cùng Wi‑Fi: http://<IP-máy>:8765
   Đột biến cào người để lây nhiễm. Đột biến hết máu sẽ bị hạ gục và hồi sinh sau 7s —
   con người phải dùng **dao (phím 2)** để kết liễu. Người thắng nếu sống sót hết giờ.
 - **Đấu đội**: Xanh vs Đỏ, hồi sinh sau 3s, đội đạt 30 điểm trước thắng.
+  - Luật **Deadmatch** (chọn trong menu khi bấm Đấu đội): không hồi sinh, đội nào hạ hết đối thủ
+    thắng vòng (+1 điểm), rồi tự sang vòng mới. Hết 3 phút thì đội còn nhiều người hơn thắng.
 
 Số bot (1–19) và độ khó chỉnh ở menu, hoặc trong menu tạm dừng (⚙ / Esc) → "Áp dụng số bot & chơi lại".
 

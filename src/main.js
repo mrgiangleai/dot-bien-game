@@ -4,7 +4,7 @@ import { isTouch } from './input.js';
 
 const $ = (id) => document.getElementById(id);
 const KEY = 'dot-bien-settings';
-const DEFAULTS = { name: 'Bạn', mode: 'zombie', bots: 9, difficulty: 'normal', sens: 1 };
+const DEFAULTS = { name: 'Bạn', mode: 'zombie', rule: 'respawn', bots: 9, difficulty: 'normal', sens: 1 };
 
 function load() {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) { return { ...DEFAULTS }; }
@@ -18,7 +18,7 @@ let game = null;
 
 if (isTouch) document.body.classList.add('touch');
 
-function seg(id, key) {
+function seg(id, key, onChange) {
   const el = $(id);
   const btns = el.querySelectorAll('button');
   btns.forEach((b) => {
@@ -26,6 +26,7 @@ function seg(id, key) {
     b.addEventListener('click', () => {
       settings[key] = b.dataset.v;
       btns.forEach((x) => x.classList.toggle('on', x === b));
+      if (onChange) onChange();
     });
   });
 }
@@ -36,7 +37,11 @@ function slider(input, label, key) {
 }
 
 $('m-name').value = settings.name;
-seg('m-mode', 'mode');
+// luật Deadmatch chỉ hiện khi chọn Đấu đội
+const syncRule = () => $('m-rule-wrap').classList.toggle('hidden', settings.mode !== 'tdm');
+seg('m-mode', 'mode', syncRule);
+seg('m-rule', 'rule');
+syncRule();
 seg('m-diff', 'difficulty');
 slider($('m-bots'), $('m-bots-val'), 'bots');
 const fmtSens = (v) => Number(v).toFixed(1);

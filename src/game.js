@@ -27,6 +27,8 @@ export class Game {
     this.opts = opts;
     this.hooks = hooks;
     this.mode = opts.mode === 'tdm' ? 'tdm' : 'zombie';
+    this.deadmatch = this.mode === 'tdm' && opts.rule === 'dm';
+    this.label = this.deadmatch ? MODES.dm.label : MODES[this.mode].label;
 
     const r = (this.renderer = new THREE.WebGLRenderer({ antialias: !isTouch, powerPreference: 'high-performance' }));
     r.setPixelRatio(Math.min(window.devicePixelRatio, isTouch ? 1.5 : 2));
@@ -192,10 +194,12 @@ export class Game {
     if (this.mode === 'zombie') {
       for (const a of this.actors) a.becomeHuman('human');
     } else {
-      if (this.round > 1) this.score = [0, 0];
+      // đấu đội thường: tỉ số là điểm hạ, mỗi trận làm mới; deadmatch: tỉ số là số vòng thắng
+      const fresh = !this.deadmatch && this.round > 1;
+      if (fresh) this.score = [0, 0];
       this.actors.forEach((a, i) => {
         a.becomeHuman(i % 2 === 0 ? 'blue' : 'red');
-        a.kills = a.deaths = 0;
+        if (fresh) a.kills = a.deaths = 0;
       });
     }
     for (const a of this.actors) this.placeAt(a, this.zoneSpawn(this.zoneFor(a)));
@@ -205,7 +209,7 @@ export class Game {
   }
 
   respawn(a) {
-    if (this.mode !== 'tdm' || this.phase !== 'play') return;
+    if (this.mode !== 'tdm' || this.deadmatch || this.phase !== 'play') return;
     a.becomeHuman(a.team);
     a.spawnProt = 2;
     this.placeAt(a, this.teamSpawn(a.team));
@@ -225,6 +229,10 @@ export class Game {
       this.score[winner === 'human' ? 0 : 1]++;
       const won = winner === this.player.team || (winner === 'human' && this.player.kind === 'human');
       this.hud.banner(winner === 'human' ? 'CON NGƯỜI CHIẾN THẮNG' : 'ĐỘT BIẾN CHIẾN THẮNG', won ? 'Bạn thắng vòng này!' : 'Bạn thua vòng này', 5);
+    } else if (this.deadmatch) {
+      if (winner) this.score[winner === 'blue' ? 0 : 1]++;
+      const title = !winner ? 'HÒA' : winner === 'blue' ? 'ĐỘI XANH THẮNG' : 'ĐỘI ĐỎ THẮNG';
+      this.hud.banner(title, !winner ? 'Hết giờ, hai đội còn bằng người' : winner === this.player.team ? 'Đội bạn hạ sạch đối thủ!' : 'Đội bạn bị hạ hết', 5);
     } else {
       const [b, r] = this.score;
       const title = b === r ? 'HÒA' : b > r ? 'ĐỘI XANH THẮNG' : 'ĐỘI ĐỎ THẮNG';
@@ -249,8 +257,8 @@ export class Game {
         this.hud.banner('RỜI VÙNG AN TOÀN', `Đột biến sẽ xuất hiện sau ${MODES.zombie.prep} giây`, 2.5);
       } else {
         this.phase = 'play';
-        this.timer = MODES.tdm.roundTime;
-        this.hud.banner('BẮT ĐẦU!', `Đội nào đạt ${MODES.tdm.killTarget} điểm trước sẽ thắng`, 2.5);
+        this.timer = this.deadmatch ? MODES.dm.roundTime : MODES.tdm.roundTime;
+        this.hud.banner('BẮT ĐẦU!', this.deadmatch ? 'Không hồi sinh · hạ hết đội địch để thắng' : `Đội nào đạt ${MODES.tdm.killTarget} điểm trước sẽ thắng`, 2.5);
       }
       sfx.round();
       return;
@@ -278,6 +286,11 @@ export class Game {
       }
       if (humans === 0) this.endRound('zombie');
       else if (zombies === 0 || this.timer <= 0) this.endRound('human');
+    } else if (this.deadmatch) {
+      let blue = 0, red = 0;
+      for (const a of this.actors) if (a.alive) { if (a.team === 'blue') blue++; else red++; }
+      if (blue === 0 || red === 0) this.endRound(blue ? 'blue' : red ? 'red' : null);
+      else if (this.timer <= 0) this.endRound(blue > red ? 'blue' : red > blue ? 'red' : null);
     } else {
       const T = MODES.tdm.killTarget;
       if (this.timer <= 0 || this.score[0] >= T || this.score[1] >= T) this.endRound();
