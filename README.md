@@ -17,8 +17,11 @@ Mở http://localhost:8765 (điện thoại cùng Wi‑Fi: http://<IP-máy>:8765
 Số bot (1–19) và độ khó chỉnh ở menu, hoặc trong menu tạm dừng (⚙ / Esc) → "Áp dụng số bot & chơi lại".
 
 ## Điều khiển
-- PC: WASD, chuột xoay, chuột trái bắn, chuột phải ngắm, Space nhảy, R nạp, 1/2/3 vũ khí, G lựu đạn, Esc tạm dừng.
-- Điện thoại: joystick trái, vuốt màn hình phải để xoay (giữ nút BẮN vừa bắn vừa xoay được), NHẢY / NẠP / NGẮM.
+- PC: WASD, chuột xoay, chuột trái bắn, chuột phải hoặc giữ Q để ngắm, Space nhảy, C nằm, R nạp,
+  1/2/3/4 vũ khí (4 = súng ngắm, ngắm x4, 10 viên, bắn từng phát), G lựu đạn, Tab bảng người chơi,
+  V đổi góc nhìn 1/3, Esc/P cài đặt.
+- Điện thoại: joystick trái, vuốt màn hình phải để xoay (giữ nút BẮN vừa bắn vừa xoay được), NHẢY / NẠP / NGẮM / NẰM / CAM, ☰ bảng người chơi.
+- Bản đồ có cầu thang dẫn lên 6 khối cao để nằm bắn tỉa.
 
 ## Cấu trúc (chuẩn bị cho chơi mạng)
 | File | Vai trò |

@@ -42,7 +42,7 @@
       </label>
       <button id="m-play" class="primary">VÀO TRẬN</button>
       <button class="ghost" disabled>CHƠI MẠNG · SẮP RA MẮT</button>
-      <p class="keys desk-only">WASD di chuyển · Chuột ngắm · Chuột trái bắn · Chuột phải ngắm kỹ · Space nhảy · R nạp đạn · 1/2/3 đổi vũ khí · G ném lựu đạn · V đổi góc nhìn 1/3 · Esc hoặc P mở cài đặt</p>
+      <p class="keys desk-only">WASD di chuyển · Chuột ngắm · Chuột trái bắn · Chuột phải / giữ Q ngắm · Space nhảy · C nằm · R nạp đạn · 1/2/3/4 đổi vũ khí (4 = súng ngắm) · Tab bảng người chơi · G ném lựu đạn · V đổi góc nhìn 1/3 · Esc hoặc P mở cài đặt</p>
     </div>
   </div>
 
@@ -64,8 +64,11 @@
       <div class="slot" id="slot-rifle" data-slot="rifle"><b>1</b>SÚNG MÁY</div>
       <div class="slot" id="slot-knife" data-slot="knife"><b>2</b>DAO</div>
       <div class="slot" id="slot-grenade" data-slot="grenade"><b>3</b>LỰU ĐẠN<i id="gren-count">1</i></div>
+      <div class="slot" id="slot-sniper" data-slot="sniper"><b>4</b>SÚNG NGẮM</div>
     </div>
     <div id="killfeed"></div>
+    <div id="scope"><i class="h"></i><i class="v"></i></div>
+    <div id="scoreboard" class="hidden"></div>
     <div id="crosshair"><i></i><i></i><i></i><i></i></div>
     <div id="hitmarker"></div>
     <div id="health"><div class="bar"><div id="hp-fill"></div></div><span id="hp-text">100</span></div>
@@ -82,6 +85,8 @@
       <button class="tbtn" id="t-jump">NHẢY</button>
       <button class="tbtn" id="t-aim">NGẮM</button>
       <button class="tbtn" id="t-view">CAM</button>
+      <button class="tbtn" id="t-prone">NẰM</button>
+      <button class="tbtn" id="t-board" aria-label="Bảng người chơi">☰</button>
       <button class="tbtn" id="t-reload">NẠP</button>
       <button class="tbtn fire" id="t-fire">BẮN</button>
     </div>

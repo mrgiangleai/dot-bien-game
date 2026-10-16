@@ -16,6 +16,9 @@ export class LocalInput {
     this.jumpQ = false; this.reloadQ = false; this.throwQ = false; this.slotQ = null;
     this.locked = false;
     this.firstPerson = false;
+    this.qHeld = false; this.proneQ = false;
+    this.boardHeld = false; this.boardToggle = false;
+    this.zoomMul = 1; // game giảm độ nhạy khi đang ngắm
     this.joyId = null; this.joyX = 0; this.joyY = 0;
     this.looks = new Map();
     this.listeners = [];
@@ -34,13 +37,15 @@ export class LocalInput {
   }
 
   rotate(dx, dy) {
-    this.yaw -= dx * this.sens;
-    this.pitch = Math.max(-1.25, Math.min(1.25, this.pitch - dy * this.sens));
+    const k = this.sens * this.zoomMul;
+    this.yaw -= dx * k;
+    this.pitch = Math.max(-1.25, Math.min(1.25, this.pitch - dy * k));
   }
 
   clearHeld() {
     this.keys.clear();
-    this.fireHeld = this.aimHeld = false;
+    this.fireHeld = this.aimHeld = this.qHeld = this.boardHeld = false;
+    this.proneQ = false;
     this.jumpQ = this.reloadQ = this.throwQ = false;
     this.slotQ = null;
     this.joyId = null; this.joyX = this.joyY = 0;
@@ -61,12 +66,20 @@ export class LocalInput {
         case 'Digit1': this.slotQ = 'rifle'; break;
         case 'Digit2': this.slotQ = 'knife'; break;
         case 'Digit3': this.slotQ = 'grenade'; break;
+        case 'Digit4': this.slotQ = 'sniper'; break;
+        case 'KeyQ': this.qHeld = true; break;
+        case 'KeyC': if (!e.repeat) this.proneQ = true; break;
+        case 'Tab': this.boardHeld = true; break;
         case 'KeyG': this.throwQ = true; break;
         case 'KeyV': this.firstPerson = !this.firstPerson; break;
         case 'Escape': case 'KeyP': this.onPause(); break;
       }
     });
-    this.on(document, 'keyup', (e) => this.keys.delete(e.code));
+    this.on(document, 'keyup', (e) => {
+      this.keys.delete(e.code);
+      if (e.code === 'KeyQ') this.qHeld = false;
+      if (e.code === 'Tab') this.boardHeld = false;
+    });
     this.on(window, 'blur', () => this.clearHeld());
     this.on(c, 'click', () => { if (!this.locked) this.lock(); });
     this.on(document, 'pointerlockchange', () => {
@@ -90,9 +103,9 @@ export class LocalInput {
     this.on(document, 'contextmenu', (e) => e.preventDefault());
     this.on(document, 'wheel', (e) => {
       if (!this.locked) return;
-      const order = ['rifle', 'knife', 'grenade'];
-      const cur = order.indexOf(this.lastSlot || 'rifle');
-      this.slotQ = order[(cur + (e.deltaY > 0 ? 1 : 2)) % 3];
+      const order = ['rifle', 'knife', 'grenade', 'sniper'];
+      const cur = Math.max(0, order.indexOf(this.lastSlot || 'rifle'));
+      this.slotQ = order[(cur + (e.deltaY > 0 ? 1 : 3)) % 4];
     });
 
     const tap = this.isTouch ? 'touchstart' : 'click';
@@ -128,6 +141,12 @@ export class LocalInput {
     this.on($('look-zone'), 'touchstart', (e) => { e.preventDefault(); startLook(e); }, opt);
     this.on($('t-fire'), 'touchstart', (e) => { e.preventDefault(); this.fireHeld = true; this.fireId = e.changedTouches[0].identifier; startLook(e); }, opt);
     this.on($('t-view'), 'touchstart', (e) => { e.preventDefault(); this.firstPerson = !this.firstPerson; }, opt);
+    this.on($('t-prone'), 'touchstart', (e) => { e.preventDefault(); this.proneQ = true; }, opt);
+    this.on($('t-board'), 'touchstart', (e) => {
+      e.preventDefault();
+      this.boardToggle = !this.boardToggle;
+      $('t-board').classList.toggle('on', this.boardToggle);
+    }, opt);
     this.on($('t-jump'), 'touchstart', (e) => { e.preventDefault(); this.jumpQ = true; }, opt);
     this.on($('t-reload'), 'touchstart', (e) => { e.preventDefault(); this.reloadQ = true; }, opt);
     this.on($('t-aim'), 'touchstart', (e) => {
@@ -171,11 +190,12 @@ export class LocalInput {
     cmd.move.x = mx; cmd.move.z = mz;
     cmd.jump = this.jumpQ;
     cmd.fire = this.fireHeld;
-    cmd.aim = this.aimHeld || this.aimToggle;
+    cmd.aim = this.aimHeld || this.qHeld || this.aimToggle;
+    cmd.prone = this.proneQ;
     cmd.reload = this.reloadQ;
     cmd.slot = this.slotQ;
     cmd.throw = this.throwQ;
-    this.jumpQ = this.reloadQ = this.throwQ = false;
+    this.jumpQ = this.reloadQ = this.throwQ = this.proneQ = false;
     this.slotQ = null;
     return cmd;
   }

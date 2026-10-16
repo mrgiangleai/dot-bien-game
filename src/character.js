@@ -12,6 +12,8 @@ const helmetGeo = new THREE.SphereGeometry(0.4, 16, 8, 0, Math.PI * 2, 0, Math.P
 const eyeGeo = new THREE.BoxGeometry(0.07, 0.1, 0.04);
 const spikeGeo = new THREE.ConeGeometry(0.09, 0.32, 6);
 const gunGeo = new THREE.BoxGeometry(0.1, 0.8, 0.15);
+const sniperGeo = new THREE.BoxGeometry(0.08, 1.15, 0.12);
+const scopeGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.36, 10);
 const knifeGeo = new THREE.BoxGeometry(0.04, 0.42, 0.09);
 const nadeGeo = new THREE.SphereGeometry(0.12, 10, 8);
 
@@ -78,14 +80,22 @@ export function createCharacter({ zombie = false, cloth = 0x7d8450 }) {
   const gun = new THREE.Mesh(gunGeo, mat(0x2e2e2e));
   gun.position.set(0, -0.62, -0.07);
   armR.add(gun);
+  // súng ngắm: nòng dài + ống ngắm
+  const sniper = new THREE.Group();
+  const sBody = new THREE.Mesh(sniperGeo, mat(0x3b3227));
+  sBody.position.y = -0.8;
+  const sScope = new THREE.Mesh(scopeGeo, mat(0x1b1b1b));
+  sScope.position.set(0, -0.62, -0.13);
+  sniper.add(sBody, sScope);
+  armR.add(sniper);
   const knife = new THREE.Mesh(knifeGeo, mat(0xd8dde2));
   knife.position.set(0, -0.72, 0);
   armR.add(knife);
   const nade = new THREE.Mesh(nadeGeo, mat(0x3d5a2a));
   nade.position.set(0, -0.6, 0);
   armR.add(nade);
-  gun.visible = knife.visible = nade.visible = false;
+  gun.visible = sniper.visible = knife.visible = nade.visible = false;
 
   root.traverse((o) => { if (o.isMesh) { o.castShadow = true; } });
-  return { root, body, head, legL, legR, armL, armR, gun, knife, nade };
+  return { root, body, head, legL, legR, armL, armR, gun, sniper, knife, nade };
 }

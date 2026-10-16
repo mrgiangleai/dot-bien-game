@@ -85,11 +85,11 @@ export class Hud {
     this.toggle('ammo', 'hidden', !human || !p.alive);
     if (human) {
       let txt;
-      if (p.slot === 'rifle') txt = p.reloadTimer > 0 ? '<small>ĐANG NẠP…</small>' : `${p.ammo}<small>/${p.reserve}</small>`;
+      if (p.hasGun) txt = p.reloadTimer > 0 ? '<small>ĐANG NẠP…</small>' : `${p.ammo}<small>/${p.reserve}</small>`;
       else if (p.slot === 'knife') txt = '<small>DAO</small>';
       else txt = `${p.grenades}<small> LỰU ĐẠN</small>`;
       this.set('ammo', txt, true);
-      for (const s of ['rifle', 'knife', 'grenade']) this.toggle('slot-' + s, 'active', p.slot === s);
+      for (const s of ['rifle', 'knife', 'grenade', 'sniper']) this.toggle('slot-' + s, 'active', p.slot === s);
       this.toggle('slot-grenade', 'empty', p.grenades <= 0);
       this.set('gren-count', String(p.grenades));
     }
@@ -109,6 +109,34 @@ export class Hud {
       if (this.hitT <= 0) $('hitmarker').className = '';
     }
     if (this.frame % 2 === 0) this.drawMinimap();
+    const board = g.input.boardHeld || g.input.boardToggle;
+    this.toggle('scoreboard', 'hidden', !board);
+    if (board && this.frame % 6 === 0) this.drawBoard();
+  }
+
+  // bảng người chơi: 2 cột theo phe, có máu và hạ gục / bị hạ
+  drawBoard() {
+    const g = this.g, me = g.player, M = MODES[g.mode];
+    const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    const groups = g.mode === 'zombie'
+      ? [[M.teamA, 'blue', g.actors.filter((a) => a.kind === 'human')], [M.teamB, 'red', g.actors.filter((a) => a.kind === 'zombie')]]
+      : [[`ĐỘI ${M.teamA}`, 'blue', g.actors.filter((a) => a.team === 'blue')], [`ĐỘI ${M.teamB}`, 'red', g.actors.filter((a) => a.team === 'red')]];
+    const status = (a) => a.eliminated ? 'BỊ LOẠI' : a.downed ? 'HẠ GỤC' : !a.alive ? 'CHẾT' : '';
+    const col = ([title, cls, list]) => {
+      list.sort((x, y) => y.kills - x.kills || x.deaths - y.deaths);
+      const rows = list.map((a) => {
+        const hp = a.alive && !a.downed ? Math.max(0, Math.ceil(a.hp)) : 0;
+        const pct = a.maxHp ? (100 * hp) / a.maxHp : 0;
+        const st = status(a);
+        return `<tr class="${a === me ? 'me' : ''}${st ? ' off' : ''}">
+          <td class="nm">${esc(a.name)}${a === me ? ' <em>(bạn)</em>' : ''}</td>
+          <td class="hp">${st ? `<span class="st">${st}</span>` : `<div class="hbar"><i style="width:${pct}%"></i></div><span>${hp}</span>`}</td>
+          <td class="k">${a.kills}</td><td class="d">${a.deaths}</td></tr>`;
+      }).join('');
+      return `<div class="team ${cls}"><h3>${title}<span>${list.length}</span></h3>
+        <table><thead><tr><th>Người chơi</th><th>Máu</th><th>Hạ</th><th>Chết</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    };
+    $('scoreboard').innerHTML = `<div class="sb-head">${M.label} · ${g.score[0]} : ${g.score[1]}</div><div class="sb-cols">${groups.map(col).join('')}</div>`;
   }
 
   drawMinimap() {
@@ -121,7 +149,7 @@ export class Hud {
     ctx.fillStyle = '#6fb3e0';
     ctx.fillRect(m(pl.x), m(pl.z), pl.w * k, pl.d * k);
     for (const b of g.world.boxes) {
-      ctx.fillStyle = b.maxY > 2 ? '#3b3b3b' : '#a88a5c';
+      ctx.fillStyle = b.stair ? '#c9a46a' : b.maxY > 2 ? '#3b3b3b' : '#a88a5c';
       ctx.fillRect(m(b.minX), m(b.minZ), (b.maxX - b.minX) * k, (b.maxZ - b.minZ) * k);
     }
     const me = g.player;

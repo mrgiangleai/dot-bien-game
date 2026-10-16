@@ -2,9 +2,10 @@
 export const SIM_DT = 1 / 60; // bước mô phỏng cố định (dễ đồng bộ khi chơi mạng)
 export const MAP_HALF = 40;
 
-export const PHYS = { gravity: 24, jumpVel: 8.2, radius: 0.42, height: 1.8, eye: 1.5, stepUp: 0.45 };
+export const PHYS = { gravity: 24, jumpVel: 8.2, radius: 0.42, height: 1.8, eye: 1.5, stepUp: 0.45,
+  proneEye: 0.45, proneHeight: 0.7 };
 
-export const HUMAN = { hp: 100, speed: 6.2 };
+export const HUMAN = { hp: 100, speed: 6.2, proneMul: 0.3 };
 export const ZOMBIE = {
   hp: 500, motherMul: 2, speed: 7.0,
   reviveTime: 7, reviveHp: 0.6,
@@ -14,6 +15,9 @@ export const ZOMBIE = {
 export const WEAPONS = {
   rifle: { name: 'SÚNG MÁY', mag: 30, reserve: 240, rate: 0.095, damage: 14, headMul: 2,
     spread: 0.028, aimSpread: 0.006, range: 150, reload: 1.8 },
+  // súng ngắm: bắn từng phát, giữ Q để ngắm x4
+  sniper: { name: 'SÚNG NGẮM', mag: 10, reserve: 30, rate: 1.1, damage: 85, headMul: 2.5, semi: true,
+    spread: 0.05, aimSpread: 0.0006, range: 250, reload: 2.4, zoom: 4 },
   knife: { name: 'DAO', rate: 0.45, range: 2.0, damage: 55 },
   grenade: { name: 'LỰU ĐẠN', count: 1, fuse: 1.8, radius: 6.5, damage: 160, throwSpeed: 16 },
 };

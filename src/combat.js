@@ -4,7 +4,9 @@ import { sfx } from './audio.js';
 
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), v4 = new THREE.Vector3();
 // vùng trúng: thân dưới, thân trên, đầu
-const SPHERES = [{ y: 0.45, r: 0.36, head: false }, { y: 0.95, r: 0.4, head: false }, { y: 1.42, r: 0.36, head: true }];
+// f = lệch về phía trước theo hướng nhân vật (dùng khi nằm)
+const SPHERES = [{ f: 0, y: 0.45, r: 0.36, head: false }, { f: 0, y: 0.95, r: 0.4, head: false }, { f: 0, y: 1.42, r: 0.36, head: true }];
+const PRONE_SPHERES = [{ f: 0.6, y: 0.3, r: 0.3, head: true }, { f: 0, y: 0.25, r: 0.36, head: false }, { f: -0.6, y: 0.2, r: 0.3, head: false }];
 
 function raySphere(o, d, cx, cy, cz, r) {
   const ox = o.x - cx, oy = o.y - cy, oz = o.z - cz;
@@ -27,6 +29,8 @@ export class Combat {
   }
 
   handle(a, cmd, dt) {
+    const pressed = cmd.fire && !a.firePrev;
+    a.firePrev = cmd.fire;
     if (a.cooldown > 0) a.cooldown -= dt;
     if (a.attackAnim > 0) a.attackAnim = Math.max(0, a.attackAnim - dt * 4);
     if (!a.alive || a.downed) return;
@@ -42,10 +46,11 @@ export class Combat {
     if (cmd.throw && a.grenades > 0) { this.throwGrenade(a, cmd); return; }
     if (cmd.reload) this.startReload(a);
     if (!cmd.fire || a.cooldown > 0) return;
-    if (a.slot === 'rifle') {
+    if (a.hasGun) {
       if (a.reloadTimer > 0) return;
       if (a.ammo <= 0) { this.startReload(a); return; }
-      this.fireRifle(a, cmd);
+      if (WEAPONS[a.slot].semi && !pressed) return; // súng ngắm: mỗi lần bấm 1 phát
+      this.fireGun(a, cmd);
     } else if (a.slot === 'knife') this.knife(a);
     else if (a.slot === 'grenade') {
       if (a.grenades > 0) this.throwGrenade(a, cmd);
@@ -61,14 +66,16 @@ export class Combat {
   }
 
   startReload(a) {
-    const w = WEAPONS.rifle;
-    if (a.slot !== 'rifle' || a.reloadTimer > 0 || a.ammo >= w.mag || a.reserve <= 0) return;
+    if (!a.hasGun) return;
+    const w = WEAPONS[a.slot];
+    if (a.reloadTimer > 0 || a.ammo >= w.mag || a.reserve <= 0) return;
     a.reloadTimer = w.reload;
     if (a.isLocal) sfx.reload();
   }
 
   finishReload(a) {
-    const n = Math.min(WEAPONS.rifle.mag - a.ammo, a.reserve);
+    if (!a.hasGun) { a.reloadTimer = 0; return; }
+    const n = Math.min(WEAPONS[a.slot].mag - a.ammo, a.reserve);
     a.ammo += n; a.reserve -= n; a.reloadTimer = 0;
   }
 
@@ -77,8 +84,9 @@ export class Combat {
     const best = { t: wh ? wh.t : maxT, normal: wh ? wh.normal : null, actor: null, head: false, point: new THREE.Vector3() };
     for (const a of this.g.actors) {
       if (a === shooter || !a.alive || a.downed || a.team === shooter.team) continue;
-      for (const s of SPHERES) {
-        const t = raySphere(o, d, a.pos.x, a.pos.y + s.y, a.pos.z, s.r);
+      const fx = -Math.sin(a.yaw), fz = -Math.cos(a.yaw);
+      for (const s of a.prone ? PRONE_SPHERES : SPHERES) {
+        const t = raySphere(o, d, a.pos.x + fx * s.f, a.pos.y + s.y, a.pos.z + fz * s.f, s.r);
         if (t !== null && t < best.t) { best.t = t; best.actor = a; best.head = s.head; }
       }
     }
@@ -86,15 +94,15 @@ export class Combat {
     return best;
   }
 
-  fireRifle(a, cmd) {
-    const w = WEAPONS.rifle, g = this.g;
+  fireGun(a, cmd) {
+    const w = WEAPONS[a.slot], g = this.g;
     a.ammo--;
     a.cooldown = w.rate;
     a.attackAnim = 0.5;
     const o = a.eyePos(v1);
     const d = cmd.aimDir ? v2.copy(cmd.aimDir) : a.lookDir(v2);
     const moving = Math.hypot(a.vel.x, a.vel.z) > 1;
-    const sp = (a.aiming ? w.aimSpread : w.spread) * (moving ? 1.6 : 1) * (a.onGround ? 1 : 2.5);
+    const sp = (a.aiming ? w.aimSpread : w.spread) * (moving ? 1.6 : 1) * (a.onGround ? 1 : 2.5) * (a.prone ? 0.6 : 1);
     d.x += (Math.random() - 0.5) * 2 * sp;
     d.y += (Math.random() - 0.5) * 2 * sp;
     d.z += (Math.random() - 0.5) * 2 * sp;
@@ -106,13 +114,15 @@ export class Combat {
     if (hit.actor) {
       const dmg = w.damage * (hit.head ? w.headMul : 1) * (0.9 + Math.random() * 0.2);
       g.effects.burst(hit.point, hit.actor.kind === 'zombie' ? 0x6fbf3a : 0xd23a3a, 6);
-      this.damage(hit.actor, dmg, a, 'rifle', hit.head, hit.point, d);
+      this.damage(hit.actor, dmg, a, a.slot, hit.head, hit.point, d);
     } else if (hit.normal) {
       g.effects.burst(hit.point, 0xf0e2c0, 4);
     }
-    sfx.shot(g.distToCam(m), a.isLocal);
+    if (a.slot === 'sniper') sfx.sniper(g.distToCam(m), a.isLocal);
+    else sfx.shot(g.distToCam(m), a.isLocal);
     if (a.isLocal) {
-      g.input.pitch = Math.min(1.25, g.input.pitch + (a.aiming ? 0.003 : 0.007));
+      const kick = a.slot === 'sniper' ? 0.03 : a.aiming ? 0.003 : 0.007;
+      g.input.pitch = Math.min(1.25, g.input.pitch + kick * (a.prone ? 0.5 : 1));
       g.input.yaw += (Math.random() - 0.5) * 0.006;
     }
   }
@@ -170,7 +180,7 @@ export class Combat {
     }
     if (t.isLocal) g.hud.hurt();
     if (dir && t.kind === 'zombie') {
-      const f = weapon === 'rifle' ? 1.3 : weapon === 'knife' ? 7 : 0;
+      const f = weapon === 'rifle' ? 1.3 : weapon === 'sniper' ? 5 : weapon === 'knife' ? 7 : 0;
       t.knock.addScaledVector(v1.set(dir.x, 0, dir.z).normalize(), f);
     }
     if (t.hp > 0) return;
@@ -180,11 +190,13 @@ export class Combat {
         t.hp = 0;
         t.downed = true;
         t.downTimer = ZOMBIE.reviveTime;
+        t.deaths++;
         if (att) att.kills++;
         g.hud.feed(att, t, 'hạ gục');
         if (t.isLocal) g.hud.banner('BẠN BỊ HẠ GỤC', 'Sẽ hồi sinh nếu không bị kết liễu bằng dao', 2.5);
       } else {
         if (att) att.kills++;
+        t.deaths++;
         g.infect(t, att);
       }
     } else {
@@ -226,7 +238,7 @@ export class Combat {
     mesh.position.copy(pos);
     g.scene.add(mesh);
     g.grenades.push({ pos, vel, fuse: w.fuse, owner: a, team: a.team, mesh });
-    a.slot = 'rifle';
+    if (a.slot === 'grenade') a.slot = 'rifle';
   }
 
   updateGrenades(dt) {

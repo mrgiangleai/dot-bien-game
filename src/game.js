@@ -6,7 +6,7 @@ import { LocalInput, isTouch } from './input.js';
 import { Combat } from './combat.js';
 import { Effects } from './effects.js';
 import { Hud } from './hud.js';
-import { MODES, SIM_DT, ZOMBIE, BOT_NAMES, SAFE } from './config.js';
+import { MODES, SIM_DT, ZOMBIE, BOT_NAMES, SAFE, WEAPONS } from './config.js';
 import { sfx } from './audio.js';
 
 const shuffle = (arr) => {
@@ -347,11 +347,19 @@ export class Game {
     const grip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.22), lam(0xf1c8a0));
     knife.add(blade, grip);
     const nade = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), lam(0x3d5a2a));
-    g.add(gun, knife, nade);
+    const sniper = new THREE.Group();
+    const sBody = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.11, 0.95), lam(0x3b3227));
+    sBody.position.z = -0.15;
+    const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.32, 12).rotateX(Math.PI / 2), lam(0x1b1b1b));
+    scope.position.set(0, 0.1, -0.05);
+    const sHand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.3), lam(0x7d8450));
+    sHand.position.set(0.02, -0.06, 0.3);
+    sniper.add(sBody, scope, sHand);
+    g.add(gun, knife, nade, sniper);
     g.position.set(0.26, -0.24, -0.55);
     g.visible = false;
     this.camera.add(g);
-    return { g, gun, knife, nade };
+    return { g, gun, knife, nade, sniper };
   }
 
   updateViewmodel(on) {
@@ -359,19 +367,33 @@ export class Game {
     vm.g.visible = on && p.kind === 'human';
     if (!vm.g.visible) return;
     vm.gun.visible = p.slot === 'rifle';
+    vm.sniper.visible = p.slot === 'sniper';
     vm.knife.visible = p.slot === 'knife';
     vm.nade.visible = p.slot === 'grenade';
     const a = Math.sin(p.attackAnim * Math.PI);
     const bob = Math.sin(p.walkPhase * 2) * 0.012 * Math.min(1, Math.hypot(p.vel.x, p.vel.z) / 4);
     const aimX = p.aiming ? 0 : 0.26, aimY = p.aiming ? -0.17 : -0.24;
-    vm.g.position.set(aimX, aimY + bob - (p.reloadTimer > 0 ? 0.15 : 0), -0.55 + (p.slot === 'rifle' ? a * 0.05 : -a * 0.25));
+    vm.g.position.set(aimX, aimY + bob - (p.reloadTimer > 0 ? 0.15 : 0), -0.55 + (p.hasGun ? a * 0.05 : -a * 0.25));
     vm.g.rotation.set(p.slot === 'knife' ? -a * 0.8 : a * 0.06, p.slot === 'knife' ? a * 0.6 : 0, 0);
+  }
+
+  toggleScope(on) {
+    if (this._scoped === on) return;
+    this._scoped = on;
+    document.getElementById('scope').classList.toggle('show', on);
+    document.getElementById('crosshair').classList.toggle('hidden', on);
   }
 
   updateCamera(dt) {
     const p = this.player;
-    const fp = this.input.firstPerson && p.alive && !p.downed;
-    this.updateViewmodel(fp);
+    const live = p.alive && !p.downed;
+    // ngắm súng ngắm: luôn chuyển sang nhìn qua ống ngắm x4
+    const scoped = live && p.aiming && p.slot === 'sniper';
+    const fp = live && (this.input.firstPerson || scoped);
+    this.updateViewmodel(fp && !scoped);
+    this.toggleScope(scoped);
+    const baseFov = 70;
+    this.input.zoomMul = scoped ? 1.2 / WEAPONS.sniper.zoom : p.aiming ? 0.7 : 1;
     if (fp) {
       // góc nhìn thứ nhất: camera đặt ở mắt nhân vật
       p.hideMesh = true;
@@ -380,8 +402,11 @@ export class Game {
       this.camera.position.copy(eye);
       const yaw = this.input.yaw, pitch = this.input.pitch, cp = Math.cos(pitch);
       this.camera.lookAt(eye.x - Math.sin(yaw) * cp, eye.y + Math.sin(pitch), eye.z - Math.cos(yaw) * cp);
-      const fov = p.aiming ? 50 : 78;
-      if (Math.abs(this.camera.fov - fov) > 0.1) {
+      const fov = scoped ? baseFov / WEAPONS.sniper.zoom : p.aiming ? 50 : 78;
+      if (scoped && this.camera.fov !== fov) {
+        this.camera.fov = fov; // vào ống ngắm ngay, không trễ
+        this.camera.updateProjectionMatrix();
+      } else if (Math.abs(this.camera.fov - fov) > 0.1) {
         this.camera.fov += (fov - this.camera.fov) * Math.min(1, dt * 12);
         this.camera.updateProjectionMatrix();
       }
@@ -398,7 +423,7 @@ export class Game {
       if (this.spec) { t = this.spec; yaw = t.yaw; pitch = t.pitch * 0.5 - 0.15; }
     }
     const aiming = t === p && p.aiming;
-    const pivot = this._v1.set(t.pos.x, t.pos.y + (t.downed ? 1.0 : 1.6), t.pos.z);
+    const pivot = this._v1.set(t.pos.x, t.pos.y + (t.downed ? 1.0 : t.prone ? 0.8 : 1.6), t.pos.z);
     const cp = Math.cos(pitch);
     const fwd = this._v2.set(-Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp);
     const dist = aiming ? 1.6 : 3.4, side = aiming ? 0.55 : 0.8;

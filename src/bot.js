@@ -112,8 +112,10 @@ export class BotController {
   humanLogic(cmd, dt) {
     const a = this.a, g = this.g, t = this.target;
     let moveDir = null;
-    let wantSlot = a.ammo <= 0 && a.reserve <= 0 ? 'knife' : 'rifle';
     const dist = t ? a.pos.distanceTo(t.pos) : Infinity;
+    const has = (gun) => a.mag[gun] > 0 || a.res[gun] > 0;
+    // xa thì dùng súng ngắm, gần thì súng máy, hết đạn thì dao
+    let wantSlot = has('sniper') && (dist > 32 || !has('rifle')) ? 'sniper' : has('rifle') ? 'rifle' : 'knife';
     const threatNear = t && this.visible && dist < 9;
 
     this.strafeT -= dt;
@@ -143,7 +145,7 @@ export class BotController {
           this.burstT = (this.firing ? this.d.burst : this.d.pause) * (0.6 + Math.random() * 0.8);
         }
         cmd.fire = this.seen > this.d.reaction && err < 0.2 && this.firing;
-        cmd.aim = dist > 25 && this.d.turn > 6;
+        cmd.aim = wantSlot === 'sniper' || (dist > 25 && this.d.turn > 6);
         const toT = yawTo(t.pos.x - a.pos.x, t.pos.z - a.pos.z);
         if (t.kind === 'zombie') {
           moveDir = dist < 12 ? toT + Math.PI + this.strafe * 0.5 : toT + this.strafe * Math.PI / 2;
@@ -164,9 +166,9 @@ export class BotController {
       else if (t && dist < 15) moveDir = yawTo(a.pos.x - t.pos.x, a.pos.z - t.pos.z);
       else if (Math.random() < 0.7 || g.phase === 'prep') moveDir = this.wander;
       if (moveDir !== null) this.turnTo(moveDir, dt, 4);
-      if (a.slot === 'rifle' && a.ammo < 15) cmd.reload = true;
+      if (a.hasGun && a.ammo < (a.slot === 'sniper' ? 5 : 15)) cmd.reload = true;
     }
-    if (a.slot === 'rifle' && a.ammo === 0) cmd.reload = true;
+    if (a.hasGun && a.ammo === 0) cmd.reload = true;
     if (a.slot !== wantSlot) cmd.slot = wantSlot;
     return moveDir;
   }

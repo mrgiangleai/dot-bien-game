@@ -63,6 +63,10 @@ export class World {
       [-18, -24, 4, 3], [18, 24, 4, 3], [18, -24, 4, 3], [-18, 24, 4, 3]];
     for (const [x, z, w, d] of blocks) this.addBox(x, z, w, d, 3.2, 0xd2b98f);
 
+    // cầu thang leo lên các khối cao (mỗi bậc 0.4m < stepUp nên bước lên được)
+    const stairs = [[-28, -28, 1], [28, -28, 1], [-28, 28, -1], [28, 28, -1], [3.5, -29.5, 1], [-3.5, 29.5, -1]];
+    for (const [x, face, away] of stairs) this.addStairs(x, face, away, 3.2);
+
     // bục cao (nhảy lên được)
     this.addBox(-30, -12, 6, 6, 1.1, 0xc9ae82);
     this.addBox(30, 12, 6, 6, 1.1, 0xc9ae82);
@@ -94,6 +98,16 @@ export class World {
       for (let z = -34; z <= 34; z += 5) {
         if (!this.pointBlocked(new THREE.Vector3(x, 0.5, z), 1.2)) this.spawns.push(new THREE.Vector3(x, 0, z));
       }
+    }
+  }
+
+  // bậc thấp nhất ở xa khối, bậc cao nhất sát mặt khối (trục z)
+  addStairs(x, faceZ, away, height, width = 2, rise = 0.4, run = 0.6) {
+    const n = Math.round(height / rise);
+    for (let i = 0; i < n; i++) {
+      const z = faceZ + away * (n * run - (i + 0.5) * run);
+      this.addBox(x, z, width, run, (i + 1) * rise, i % 2 ? 0xc4a678 : 0xceb184);
+      this.boxes[this.boxes.length - 1].stair = true;
     }
   }
 

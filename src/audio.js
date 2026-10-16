@@ -59,6 +59,12 @@ export const sfx = {
     noise({ dur: 0.08, freq: 2600, vol: 0.45 * v });
     noise({ dur: 0.14, freq: 420, vol: 0.6 * v });
   },
+  sniper(d, local) {
+    const v = local ? 1 : att(d * 0.5) * 0.8;
+    noise({ dur: 0.12, freq: 3200, vol: 0.55 * v });
+    noise({ dur: 0.5, freq: 260, vol: 0.9 * v });
+    if (local) tone({ freq: 180, freq2: 140, dur: 0.08, vol: 0.12, delay: 0.45 });
+  },
   knife(d = 0) { noise({ dur: 0.12, freq: 3200, type: 'bandpass', q: 2, vol: 0.3 * att(d) }); },
   claw(d = 0) { noise({ dur: 0.15, freq: 900, type: 'bandpass', q: 3, vol: 0.35 * att(d) }); },
   hit(head) { tone({ freq: head ? 1500 : 950, freq2: head ? 2200 : 1300, dur: 0.05, vol: 0.12, type: 'triangle' }); },
