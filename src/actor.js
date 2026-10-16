@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { PHYS, HUMAN, ZOMBIE, WEAPONS, TEAM_CLOTH } from './config.js';
-import { createCharacter } from './character.js';
+import { PHYS, HUMAN, ZOMBIE, WEAPONS, TEAM_CLOTH } from './config.js?v=20261016174818';
+import { createCharacter } from './character.js?v=20261016174818';
 
 const lerp = THREE.MathUtils.lerp;
 

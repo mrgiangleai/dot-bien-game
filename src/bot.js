@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { DIFFICULTY, ZOMBIE } from './config.js';
-import { blankCmd } from './actor.js';
+import { DIFFICULTY, ZOMBIE } from './config.js?v=20261016174818';
+import { blankCmd } from './actor.js?v=20261016174818';
 
 const TAU = Math.PI * 2;
 const STEER = [0, 0.4, -0.4, 0.8, -0.8, 1.2, -1.2, 1.7, -1.7, 2.4, -2.4];

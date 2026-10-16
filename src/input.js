@@ -1,4 +1,4 @@
-import { blankCmd } from './actor.js';
+import { blankCmd } from './actor.js?v=20261016174818';
 
 export const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 const $ = (id) => document.getElementById(id);

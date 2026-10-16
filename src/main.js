@@ -1,6 +1,6 @@
-import { Game } from './game.js';
-import { initAudio } from './audio.js';
-import { isTouch } from './input.js';
+import { Game } from './game.js?v=20261016174818';
+import { initAudio } from './audio.js?v=20261016174818';
+import { isTouch } from './input.js?v=20261016174818';
 
 const $ = (id) => document.getElementById(id);
 const KEY = 'dot-bien-settings';

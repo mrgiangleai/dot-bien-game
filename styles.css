@@ -14,8 +14,11 @@
 html, body {
   margin: 0; height: 100%; overflow: hidden; background: #1b2433; color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  user-select: none; -webkit-user-select: none; touch-action: none;
+  user-select: none; -webkit-user-select: none;
 }
+/* chỉ chặn cử chỉ trình duyệt trong lúc chơi; menu vẫn cuộn được */
+#app, #hud { touch-action: none; }
+.screen { touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 #app canvas { display: block; position: fixed; inset: 0; }
 .hidden { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -242,6 +245,26 @@ body.touch #health { left: calc(30px + var(--safe-l)); top: 52%; font-size: 18px
 body.touch #health .bar { width: 130px; }
 body.touch #hint { bottom: 8px; font-size: 12px; }
 body.touch #minimap { width: 110px; height: 110px; }
+
+/* menu gọn khi màn hình thấp (điện thoại xoay ngang): 2 cột, nút VÀO TRẬN luôn hiện */
+@media (max-height: 520px) {
+  .screen { align-items: flex-start; padding: 10px 16px; }
+  .menu-panel {
+    width: min(760px, 100%); display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; row-gap: 8px;
+    padding: 12px 16px;
+  }
+  .menu-panel h1 { grid-column: 1 / -1; font-size: 26px; }
+  .menu-panel h1 span { display: inline; margin: 0 0 0 10px; font-size: 12px; }
+  .menu-panel .field { gap: 4px; font-size: 12px; }
+  .menu-panel .seg button { padding: 8px 4px; font-size: 12px; }
+  .menu-panel input:not([type]) { padding: 7px 10px; }
+  .menu-panel > button { grid-column: 1 / -1; padding: 10px; }
+  .menu-panel > button.primary {
+    position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -8px 16px rgba(28, 36, 50, 0.9);
+  }
+  .menu-panel > button.ghost, .menu-panel .keys { display: none; }
+  #pause .panel { gap: 8px; padding: 14px 16px; }
+}
 
 #rotate-hint {
   display: none; position: fixed; inset: 0; z-index: 100; background: #1b2433; align-items: center;

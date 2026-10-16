@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { WEAPONS, ZOMBIE, PHYS, MODES } from './config.js';
-import { sfx } from './audio.js';
+import { WEAPONS, ZOMBIE, PHYS, MODES } from './config.js?v=20261016174818';
+import { sfx } from './audio.js?v=20261016174818';
 
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), v4 = new THREE.Vector3();
 // vùng trúng: thân dưới, thân trên, đầu

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MAP_HALF, PHYS } from './config.js';
+import { MAP_HALF, PHYS } from './config.js?v=20261016174818';
 
 const AXES = ['x', 'y', 'z'];
 

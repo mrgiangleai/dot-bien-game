@@ -46,3 +46,7 @@ nhận lệnh/trạng thái từ server. Bot vẫn chạy trên server để l�
 Bấm đúp **`Đột Biến.app`** (trong thư mục dự án hoặc trên Desktop) → game mở trong cửa sổ riêng,
 không cần Terminal. Đóng cửa sổ là server tự tắt. Sửa code xong chỉ cần mở lại app (hoặc Cmd+R).
 Nếu di chuyển thư mục dự án, chạy lại `./tools/build-app.sh` để tạo lại app.
+
+## Cập nhật lên GitHub Pages
+Trước khi đẩy code, chạy `python3 tools/stamp_version.py` để gắn số phiên bản vào đường dẫn file,
+tránh điện thoại/trình duyệt dùng code cũ trong bộ nhớ đệm (GitHub giữ cache ~10 phút).

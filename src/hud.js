@@ -1,5 +1,5 @@
-import { MAP_HALF, MODES } from './config.js';
-import { isTouch } from './input.js';
+import { MAP_HALF, MODES } from './config.js?v=20261016174818';
+import { isTouch } from './input.js?v=20261016174818';
 
 const $ = (id) => document.getElementById(id);
 const fmtTime = (s) => {

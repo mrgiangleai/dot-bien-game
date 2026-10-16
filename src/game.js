@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { World } from './world.js';
-import { Actor } from './actor.js';
-import { BotController } from './bot.js';
-import { LocalInput, isTouch } from './input.js';
-import { Combat } from './combat.js';
-import { Effects } from './effects.js';
-import { Hud } from './hud.js';
-import { MODES, SIM_DT, ZOMBIE, BOT_NAMES, SAFE, WEAPONS } from './config.js';
-import { sfx } from './audio.js';
+import { World } from './world.js?v=20261016174818';
+import { Actor } from './actor.js?v=20261016174818';
+import { BotController } from './bot.js?v=20261016174818';
+import { LocalInput, isTouch } from './input.js?v=20261016174818';
+import { Combat } from './combat.js?v=20261016174818';
+import { Effects } from './effects.js?v=20261016174818';
+import { Hud } from './hud.js?v=20261016174818';
+import { MODES, SIM_DT, ZOMBIE, BOT_NAMES, SAFE, WEAPONS } from './config.js?v=20261016174818';
+import { sfx } from './audio.js?v=20261016174818';
 
 const shuffle = (arr) => {
   for (let i = arr.length - 1; i > 0; i--) {
