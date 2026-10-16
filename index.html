@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1b2433">
+  <title>Đột Biến – Bắn Súng</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- MENU -->
+  <div id="menu" class="screen">
+    <div class="panel menu-panel">
+      <h1>ĐỘT BIẾN<span>Bắn súng góc nhìn thứ ba · đấu bot</span></h1>
+      <label class="field">Tên của bạn
+        <input id="m-name" maxlength="14" autocomplete="off">
+      </label>
+      <div class="field">Chế độ
+        <div class="seg" id="m-mode">
+          <button data-v="zombie">Zombie (Người vs Đột biến)</button>
+          <button data-v="tdm">Đấu đội</button>
+        </div>
+      </div>
+      <label class="field">Số bot trong trận: <b id="m-bots-val">9</b>
+        <input type="range" id="m-bots" min="1" max="19" step="1">
+      </label>
+      <div class="field">Độ khó bot
+        <div class="seg" id="m-diff">
+          <button data-v="easy">Dễ</button>
+          <button data-v="normal">Thường</button>
+          <button data-v="hard">Khó</button>
+        </div>
+      </div>
+      <label class="field">Độ nhạy chuột / cảm ứng: <b id="m-sens-val">1.0</b>
+        <input type="range" id="m-sens" min="0.2" max="3" step="0.1">
+      </label>
+      <button id="m-play" class="primary">VÀO TRẬN</button>
+      <button class="ghost" disabled>CHƠI MẠNG · SẮP RA MẮT</button>
+      <p class="keys desk-only">WASD di chuyển · Chuột ngắm · Chuột trái bắn · Chuột phải ngắm kỹ · Space nhảy · R nạp đạn · 1/2/3 đổi vũ khí · G ném lựu đạn · V đổi góc nhìn 1/3 · Esc hoặc P mở cài đặt</p>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <canvas id="minimap" width="160" height="160"></canvas>
+    <div id="scorebox">
+      <div class="row">
+        <span class="cnt blue" id="cnt-a">0</span>
+        <span class="lbl blue" id="lbl-a">NGƯỜI</span>
+        <span class="score" id="score">0 : 0</span>
+        <span class="lbl red" id="lbl-b">ĐỘT BIẾN</span>
+        <span class="cnt red" id="cnt-b">0</span>
+      </div>
+      <div class="sub" id="modeline"></div>
+    </div>
+    <button id="btn-settings" aria-label="Tạm dừng">⚙</button>
+    <div id="slots">
+      <div class="slot" id="slot-rifle" data-slot="rifle"><b>1</b>SÚNG MÁY</div>
+      <div class="slot" id="slot-knife" data-slot="knife"><b>2</b>DAO</div>
+      <div class="slot" id="slot-grenade" data-slot="grenade"><b>3</b>LỰU ĐẠN<i id="gren-count">1</i></div>
+    </div>
+    <div id="killfeed"></div>
+    <div id="crosshair"><i></i><i></i><i></i><i></i></div>
+    <div id="hitmarker"></div>
+    <div id="health"><div class="bar"><div id="hp-fill"></div></div><span id="hp-text">100</span></div>
+    <div id="ammo"></div>
+    <div id="hint"></div>
+    <div id="banner"></div>
+    <div id="damage-vignette"></div>
+    <div id="dmg-layer"></div>
+    <div id="lock-hint" class="desk-only">Nhấp chuột vào màn hình để điều khiển</div>
+
+    <div id="touch-controls">
+      <div id="look-zone"></div>
+      <div id="joy-zone"><div id="joystick"><div id="stick"></div></div></div>
+      <button class="tbtn" id="t-jump">NHẢY</button>
+      <button class="tbtn" id="t-aim">NGẮM</button>
+      <button class="tbtn" id="t-view">CAM</button>
+      <button class="tbtn" id="t-reload">NẠP</button>
+      <button class="tbtn fire" id="t-fire">BẮN</button>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pause" class="screen hidden">
+    <div class="panel">
+      <h2>TẠM DỪNG</h2>
+      <label class="field">Số bot: <b id="p-bots-val"></b>
+        <input type="range" id="p-bots" min="1" max="19" step="1">
+      </label>
+      <label class="field">Độ nhạy chuột / cảm ứng: <b id="p-sens-val">1.0</b>
+        <input type="range" id="p-sens" min="0.2" max="3" step="0.1">
+      </label>
+      <button id="p-resume" class="primary">TIẾP TỤC</button>
+      <button id="p-restart">ÁP DỤNG SỐ BOT &amp; CHƠI LẠI</button>
+      <button id="p-quit" class="ghost">THOÁT RA MENU</button>
+    </div>
+  </div>
+
+  <div id="rotate-hint">Xoay ngang điện thoại để chơi</div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
